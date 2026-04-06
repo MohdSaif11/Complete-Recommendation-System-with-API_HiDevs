@@ -1,28 +1,51 @@
-import json
 from api.app import app
 
-def test_health():
-    client = app.test_client()
-    response = client.get("/health")
+client = app.test_client()
 
-    assert response.status_code == 200
+
+def test_home():
+    res = client.get("/")
+    assert res.status_code == 200
+    assert "message" in res.get_json()
+
+
+def test_health():
+    res = client.get("/health")
+    assert res.status_code == 200
+    assert res.get_json()["status"] == "ok"
+
 
 def test_recommend():
-    client = app.test_client()
-    response = client.get("/recommend/u1")
-
-    assert response.status_code == 200
-    data = json.loads(response.data)
-
+    res = client.get("/recommend/u1")
+    assert res.status_code == 200
+    data = res.get_json()
     assert "recommendations" in data
 
-def test_feedback():
-    client = app.test_client()
 
-    response = client.post("/feedback", json={
+def test_feedback_get():
+    res = client.get("/feedback")
+    assert res.status_code == 200
+    assert "message" in res.get_json()
+
+
+def test_feedback_post():
+    res = client.post("/feedback", json={
         "user_id": "u1",
-        "content_id": "c1",
+        "content_id": "c10",
         "rating": 5
     })
+    assert res.status_code == 200
+    assert "status" in res.get_json()
 
-    assert response.status_code == 200
+
+def test_feedback_bad_request():
+    res = client.post("/feedback", json={})
+    assert res.status_code == 400
+
+
+def test_metrics():
+    res = client.get("/metrics")
+    assert res.status_code == 200
+    data = res.get_json()
+    assert "total_requests" in data
+    

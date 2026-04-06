@@ -1,5 +1,7 @@
 # Add your project dependencies here
 
-flask==3.0.3
-pytest==8.2.0
-requests==2.32.3
+flask
+pytest
+requests
+pytest-cov
+

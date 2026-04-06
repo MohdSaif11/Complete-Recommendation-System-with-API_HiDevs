@@ -1,67 +1,39 @@
 import time
-from engine.candidate_gen import CandidateGenerator
-from engine.scorer import RecommendationScorer
 
 class RecommendationOrchestrator:
 
-    def __init__(self, user_repo, content_repo, interaction_repo):
-        self.user_repo = user_repo
+    def __init__(self, content_repo, interaction_repo):
         self.content_repo = content_repo
         self.interaction_repo = interaction_repo
-
         self.cache = {}
-
-        # 🔥 metrics
-        self.request_count = 0
+        self.requests = 0
         self.total_time = 0
 
     def get_recommendations(self, user_id, limit=5):
         start = time.time()
-        self.request_count += 1
+        self.requests += 1
 
-        # 🔥 cache
         if user_id in self.cache:
             return self.cache[user_id]
 
         history = self.interaction_repo.get_user_history(user_id)
-        all_content = self.content_repo.get_all_content()
+        content = self.content_repo.get_all()
 
-        # cold start
         if not history:
-            result = all_content[:limit]
-            self.cache[user_id] = result
+            result = [{"item": c[0], "reason": "popular item"} for c in content[:limit]]
             return result
 
-        user_data = {user_id: history}
-        item_data = {c: [] for c in all_content}
+        ranked = sorted(content, key=lambda x: x[1], reverse=True)
 
-        cg = CandidateGenerator(user_data, item_data)
-        candidates = cg.hybrid_candidates(user_id)
-
-        scorer = RecommendationScorer()
-
-        def relevance(u, item, ctx):
-            return 1.0 if item not in history else 0
-
-        def popularity(u, item, ctx):
-            return 0.5
-
-        scorer.add_scorer("relevance", relevance, 0.7)
-        scorer.add_scorer("popularity", popularity, 0.3)
-
-        ranked = scorer.rank_candidates(user_id, candidates, {}, limit)
-
-        # 🔥 explanation added
-        result = [
-            {
-                "item": item,
-                "reason": "Recommended based on relevance and popularity"
-            }
-            for item, _, _ in ranked
-        ]
+        result = []
+        for c in ranked:
+            if c[0] not in history:
+                result.append({
+                    "item": c[0],
+                    "reason": "based on popularity + unseen"
+                })
 
         self.total_time += (time.time() - start)
+        self.cache[user_id] = result[:limit]
 
-        self.cache[user_id] = result
-        return result
-        
+        return result[:limit]

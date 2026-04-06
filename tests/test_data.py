@@ -1,20 +1,13 @@
-from data.models import create_tables
-from data.repositories import UserRepository, ContentRepository, InteractionRepository
+from data.repositories import InteractionRepository
 
-def test_database_setup():
-    create_tables()
-    user_repo = UserRepository()
-    content_repo = ContentRepository()
+def test_add_and_fetch():
+    repo = InteractionRepository()
 
-    # basic check (no crash)
-    assert user_repo is not None
-    assert content_repo is not None
+    # insert
+    repo.add("u1", "c10", 5)
 
-def test_interaction():
-    interaction_repo = InteractionRepository()
+    # fetch
+    history = repo.get_user_history("u1")
 
-    interaction_repo.add_interaction("u1", "c1", 5)
-    history = interaction_repo.get_user_history("u1")
-
-    assert isinstance(history, list)
+    assert "c10" in history
     

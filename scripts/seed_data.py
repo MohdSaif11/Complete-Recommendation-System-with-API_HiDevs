@@ -1,29 +1,19 @@
-from data.models import create_tables
 from data.database import get_connection
+from data.models import create_tables
 
 create_tables()
 conn = get_connection()
 cur = conn.cursor()
 
-# users
-for i in range(1, 6):
-    cur.execute("INSERT OR IGNORE INTO users VALUES (?, ?, ?, datetime('now'))",
-                (f"u{i}", f"User{i}", "tech"))
+for i in range(1,11):
+    cur.execute("INSERT OR IGNORE INTO users VALUES (?,?)",(f"u{i}",f"user{i}"))
 
-# content
-for i in range(1, 11):
-    cur.execute("INSERT OR IGNORE INTO content VALUES (?, ?, ?, ?, ?)",
-                (f"c{i}", f"Content{i}", "AI", "easy", i))
+for i in range(1,21):
+    cur.execute("INSERT OR IGNORE INTO content VALUES (?, ?, ?)",(f"c{i}",f"content{i}",i))
 
-# 🔥 skills
-cur.execute("INSERT OR IGNORE INTO skills VALUES ('s1','Python')")
-cur.execute("INSERT OR IGNORE INTO skills VALUES ('s2','AI')")
-
-# user skills
-cur.execute("INSERT OR IGNORE INTO user_skills VALUES ('u1','s1',5)")
-
-# content skills
-cur.execute("INSERT OR IGNORE INTO content_skills VALUES ('c1','s1')")
+for i in range(1,11):
+    for j in range(1,5):
+        cur.execute("INSERT INTO interactions VALUES (?, ?, ?)",(f"u{i}",f"c{j}",5))
 
 conn.commit()
 conn.close()

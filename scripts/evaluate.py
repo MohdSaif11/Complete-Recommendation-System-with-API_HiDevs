@@ -1,9 +1,9 @@
 from engine.evaluator import RecommendationEvaluator
 
-evaluator = RecommendationEvaluator()
+eval = RecommendationEvaluator()
 
-recs = {"u1": ["c1", "c2", "c3"]}
-gt = {"u1": ["c2", "c3"]}
+recs = {"u1":["c5","c6","c7","c8","c9"]}
+gt = {"u1":["c5","c6","c7"]}
 
-metrics = evaluator.evaluate_all(recs, gt, k=3)
-print(metrics)
+print(eval.evaluate_all(recs, gt, 5))
+
